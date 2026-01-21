@@ -23,6 +23,9 @@ jobs:
         pip install -r requirements.txt
 
     - name: Run tests
+      # This env block tells Python to look in the current directory for modules
+      env:
+        PYTHONPATH: .
       run: |
         pytest
 
@@ -38,7 +41,3 @@ jobs:
           source venv/bin/activate
           pip install -r requirements.txt
           sudo systemctl restart python-app
-
-    - name: Run tests
-  run: PYTHONPATH=$PYTHONPATH:$(pwd) pytest
-
