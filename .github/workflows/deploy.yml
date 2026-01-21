@@ -37,12 +37,26 @@ jobs:
         host: ${{ secrets.SERVER_IP }}
         username: ${{ secrets.SERVER_USER }}
         key: ${{ secrets.SERVER_SSH_KEY }}
-        # debug: true will show the SSH handshake if it hangs again
         debug: true
-        # script_stop: true ensures the job fails if the 'cd' or 'pip' fails
         script_stop: true
         script: |
+          # 1. Ensure the directory exists
+          sudo mkdir -p /var/www/python-app
+          sudo chown -R ${{ secrets.SERVER_USER }}:${{ secrets.SERVER_USER }} /var/www/python-app
           cd /var/www/python-app
-          git pull origin main
+
+          # 2. Initialize Git if not present, otherwise pull updates
+          if [ ! -d ".git" ]; then
+            git clone https://github.com/${{ github.repository }}.git .
+          else
+            git pull origin main
+          fi
+
+          # 3. Create Virtual Environment if not present
+          if [ ! -d "venv" ]; then
+            python3 -m venv venv
+          fi
+
+          # 4. Install dependencies and restart service
           ./venv/bin/pip install -r requirements.txt
           sudo systemctl restart python-app
